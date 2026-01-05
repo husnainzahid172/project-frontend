@@ -41,7 +41,8 @@ const formSchema = z.object({
 });
 
 type ExpenseFormProps = {
-  onSubmit: (data: Omit<Transaction, 'id'>) => void;
+  onSubmit: (data: Omit<Transaction, 'id' | 'date'> & { date: Date | undefined }) => void;
+  isPending: boolean;
 };
 
 const expenseCategories = [
@@ -50,7 +51,7 @@ const expenseCategories = [
 ];
 const incomeCategories = ["Salary", "Freelance", "Investment", "Gift", "Other"];
 
-export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
+export default function ExpenseForm({ onSubmit, isPending }: ExpenseFormProps) {
   const { toast } = useToast();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -252,7 +253,9 @@ export default function ExpenseForm({ onSubmit }: ExpenseFormProps) {
           )}
         />
         
-        <Button type="submit" className="w-full !mt-6">Add Transaction</Button>
+        <Button type="submit" className="w-full !mt-6" disabled={isPending}>
+          {isPending ? 'Adding...' : 'Add Transaction'}
+        </Button>
       </form>
     </Form>
   );

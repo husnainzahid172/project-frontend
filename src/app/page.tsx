@@ -1,27 +1,42 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import type { Transaction } from '@/lib/types';
-import { initialTransactions } from '@/lib/data';
 import Dashboard from '@/app/components/dashboard';
 import ExpenseForm from '@/app/components/expense-form';
 import ExpenseList from '@/app/components/expense-list';
 import { PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { addTransaction, deleteTransaction } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
-  const handleAddTransaction = (transaction: Omit<Transaction, 'id'>) => {
-    const newTransaction = {
-      ...transaction,
-      id: crypto.randomUUID(),
-    };
-    setTransactions(prev => [newTransaction, ...prev].sort((a, b) => b.date.getTime() - a.date.getTime()));
+  const handleAddTransaction = (transaction: Omit<Transaction, 'id' | 'date'> & { date: Date | undefined }) => {
+    startTransition(async () => {
+      const result = await addTransaction(transaction);
+      if (result.success && result.data) {
+        setTransactions(prev => [result.data!, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        toast({ title: "Success", description: "Transaction added." });
+      } else {
+        toast({ variant: "destructive", title: "Error", description: result.message });
+      }
+    });
   };
 
   const handleDeleteTransaction = (id: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
+     startTransition(async () => {
+      const result = await deleteTransaction(id);
+      if (result.success) {
+        setTransactions(prev => prev.filter(t => t.id !== id));
+        toast({ title: "Success", description: "Transaction deleted." });
+      } else {
+        toast({ variant: "destructive", title: "Error", description: result.message });
+      }
+    });
   };
 
   const totalIncome = transactions
@@ -54,7 +69,7 @@ export default function Home() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ExpenseForm onSubmit={handleAddTransaction} />
+                <ExpenseForm onSubmit={handleAddTransaction} isPending={isPending} />
               </CardContent>
             </Card>
           </div>
