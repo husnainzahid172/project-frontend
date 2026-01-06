@@ -1,0 +1,28 @@
+{
+  "pages": {
+    "/page": [
+      "static/chunks/efe0b_next_dist_b376d469._.js",
+      "static/chunks/Desktop_Expense Tracker _frontend_src_app_favicon_ico_mjs_7ee18387._.js",
+      "static/chunks/Desktop_Expense Tracker _frontend_src_app_globals_d003f9e3.css",
+      "static/chunks/efe0b_bd056995._.js",
+      "static/chunks/Desktop_Expense Tracker _frontend_src_6f6d1158._.js",
+      "static/chunks/Desktop_Expense Tracker _frontend_src_app_layout_tsx_8653149d._.js",
+      "static/chunks/efe0b_next_dist_client_components_builtin_global-error_120f3737.js",
+      "static/chunks/Desktop_Expense Tracker _frontend_src_0fb4cd03._.js",
+      "static/chunks/efe0b_zod_v3_d4d149e0._.js",
+      "static/chunks/efe0b_d6d073c8._.js",
+      "static/chunks/efe0b_react-day-picker_dist_esm_960346b5._.js",
+      "static/chunks/efe0b_57aa0564._.js",
+      "static/chunks/Desktop_Expense Tracker _frontend_src_app_page_tsx_120f3737._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_9d55dc95._.js",
+      "static/chunks/efe0b_next_dist_compiled_react-dom_2948b4a0._.js",
+      "static/chunks/efe0b_next_dist_compiled_next-devtools_index_37453441.js",
+      "static/chunks/efe0b_next_dist_compiled_418a0fb1._.js",
+      "static/chunks/efe0b_next_dist_client_283507f1._.js",
+      "static/chunks/efe0b_next_dist_bbb14fe3._.js",
+      "static/chunks/efe0b_@swc_helpers_cjs_ff174433._.js",
+      "static/chunks/Desktop_Expense Tracker _frontend_a0ff3932._.js",
+      "static/chunks/turbopack-Desktop_Expense Tracker _frontend_d6d4baf6._.js"
+    ]
+  }
+}

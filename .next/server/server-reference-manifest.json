@@ -1,0 +1,51 @@
+{
+  "node": {
+    "40ecde144ce79c256c6e0196ce36feb67bb23d7991": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/Desktop/Expense Tracker /frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker /frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "addTransaction",
+          "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts",
+      "exportedName": "addTransaction"
+    },
+    "402763efa53a94e084ffea06431a1b6a25c1d1dbe9": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/Desktop/Expense Tracker /frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker /frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteTransaction",
+          "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts",
+      "exportedName": "deleteTransaction"
+    },
+    "4072998c68246d4332873182e78bb38a18e9b57fc6": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/Desktop/Expense Tracker /frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker /frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getCategorySuggestions",
+          "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts",
+      "exportedName": "getCategorySuggestions"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "/1OsH34xRRJNwe7r6s1L47zhWeh/rAsusdv7rXWgfKw="
+}
