@@ -1,48 +1,48 @@
 {
   "node": {
-    "40ecde144ce79c256c6e0196ce36feb67bb23d7991": {
+    "407602c696ad39c3deb5570f741c005bd29b531a3d": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Desktop/Expense Tracker /frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker /frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Desktop/Expense Tracker/frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker/frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "addTransaction",
-          "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts"
+          "filename": "Desktop/Expense Tracker/frontend/src/lib/actions.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts",
+      "filename": "Desktop/Expense Tracker/frontend/src/lib/actions.ts",
       "exportedName": "addTransaction"
     },
-    "402763efa53a94e084ffea06431a1b6a25c1d1dbe9": {
+    "40f4f4d140d14fc499fa7494ed9f695c33b1a7d9be": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Desktop/Expense Tracker /frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker /frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Desktop/Expense Tracker/frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker/frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "deleteTransaction",
-          "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts"
+          "filename": "Desktop/Expense Tracker/frontend/src/lib/actions.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts",
+      "filename": "Desktop/Expense Tracker/frontend/src/lib/actions.ts",
       "exportedName": "deleteTransaction"
     },
-    "4072998c68246d4332873182e78bb38a18e9b57fc6": {
+    "40f241330e7dfb9b07aea6e30defb4f18a62dee0b0": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Desktop/Expense Tracker /frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker /frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Desktop/Expense Tracker/frontend/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/Expense Tracker/frontend/src/lib/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getCategorySuggestions",
-          "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts"
+          "filename": "Desktop/Expense Tracker/frontend/src/lib/actions.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "Desktop/Expense Tracker /frontend/src/lib/actions.ts",
+      "filename": "Desktop/Expense Tracker/frontend/src/lib/actions.ts",
       "exportedName": "getCategorySuggestions"
     }
   },

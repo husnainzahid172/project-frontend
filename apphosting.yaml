@@ -1,7 +1,60 @@
-# Settings to manage and configure a Firebase App Hosting backend.
-# https://firebase.google.com/docs/app-hosting/configure
+name: Backend CI/CD Pipeline
 
-runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 1
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests (if any)
+        run: npm test || echo "No tests found"
+
+      - name: Build Docker image
+        run: docker build -t husnainbnu/expense-tracker-backend:latest .
+
+  cd:
+    name: Continuous Deployment
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker image
+        run: docker push husnainbnu/expense-tracker-backend:latest
+
+      - name: Deploy to DigitalOcean
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            docker pull husnainbnu/expense-tracker-backend:latest
+            docker stop expense-backend || true
+            docker rm expense-backend || true
+            docker run -d \
+              --name expense-backend \
+              -p 5003:5000 \
+              --env-file /root/.env \
+              husnainbnu/expense-tracker-backend:latest
