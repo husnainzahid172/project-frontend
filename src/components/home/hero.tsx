@@ -55,7 +55,7 @@ export function Hero() {
 
         {/* Supporting Narrative */}
         <p className="mt-6 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-          Ultra-high purity lyophilized peptides and analytical reference sequences. Third-party verified by HPLC & Mass Spectrometry (>99% purity) with batch Certificates of Analysis (COAs). Order on-site with direct WhatsApp instant fulfillment.
+          Ultra-high purity lyophilized peptides and analytical reference sequences. Third-party verified by HPLC &amp; Mass Spectrometry (&gt;99% purity) with batch Certificates of Analysis (COAs). Order on-site with direct WhatsApp instant fulfillment.
         </p>
 
         {/* CTAs */}
