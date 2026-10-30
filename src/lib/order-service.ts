@@ -52,13 +52,20 @@ export async function processOrderCreation(
   }
 
   // 2. Validate destination eligibility
+  const rawCountry = (customer.countryCode || (customer as any).country || '').trim();
+  if (!rawCountry) {
+    return {
+      success: false,
+      error: 'Destination country code (e.g. GB, DE, FR) is required.',
+    };
+  }
   const destination = ELIGIBLE_COUNTRIES.find(
-    (c) => c.code.toUpperCase() === customer.countryCode.toUpperCase()
+    (c) => c.code.toUpperCase() === rawCountry.toUpperCase()
   );
   if (!destination) {
     return {
       success: false,
-      error: `Destination "${customer.countryCode}" is currently not eligible. We serve the United Kingdom and authorized EU research territories only.`,
+      error: `Destination "${rawCountry}" is currently not eligible. We serve the United Kingdom and authorized EU research territories only.`,
     };
   }
 
