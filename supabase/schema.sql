@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS public.products (
     max_per_order INTEGER NOT NULL DEFAULT 20 CHECK (max_per_order > 0),
     cap_color TEXT DEFAULT '#10b981',
     lawful_destinations TEXT[] NOT NULL DEFAULT ARRAY['GB', 'DE', 'FR', 'NL', 'IE', 'BE', 'IT', 'ES', 'AT', 'CH'],
+    eligibility_status TEXT NOT NULL DEFAULT 'pending_review' CHECK (
+        eligibility_status IN ('pending_review', 'approved_marketing', 'approved_sale', 'not_approved')
+    ),
     description TEXT NOT NULL,
     specifications JSONB DEFAULT '{}'::jsonb,
     safety_notes TEXT,
@@ -107,6 +110,12 @@ CREATE TABLE IF NOT EXISTS public.admin_profiles (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
+CREATE POLICY "Admins read own profile"
+    ON public.admin_profiles
+    FOR SELECT
+    TO authenticated
+    USING (user_id = auth.uid());
+
 -- 6. Row Level Security (RLS) Configuration
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
@@ -116,7 +125,7 @@ ALTER TABLE public.admin_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read products"
     ON public.products
     FOR SELECT
-    USING (true);
+    USING (eligibility_status IN ('approved_marketing', 'approved_sale'));
 
 CREATE POLICY "Admin write products"
     ON public.products

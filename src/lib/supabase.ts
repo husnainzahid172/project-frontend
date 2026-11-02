@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Product } from '@/types/product';
 import { OrderRecord, OrderItemRecord, OrderStatus } from '@/types/order';
 import { INITIAL_PRODUCTS } from '@/lib/products-data';
+import { isPubliclyVisible, ProductEligibilityStatus } from '@/lib/eligibility';
 
 // Read configuration from environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -152,6 +153,11 @@ export async function fetchProducts(): Promise<Product[]> {
     }
   }
   return fallbackDb.products;
+}
+
+export async function fetchPublicProducts(): Promise<Product[]> {
+  const products = await fetchProducts();
+  return products.filter((product) => isPubliclyVisible(product.eligibility_status));
 }
 
 export async function fetchProductById(idOrSlug: string): Promise<Product | null> {
@@ -311,6 +317,7 @@ export async function updateOrderStatusInDb(
     } catch {
       // fallback
     }
+
   }
 
   const order = fallbackDb.orders.find((o) => o.id === orderId || o.reference === orderId);
@@ -320,4 +327,33 @@ export async function updateOrderStatusInDb(
     return true;
   }
   return false;
+}
+
+export async function updateProductInDb(
+  productId: string,
+  changes: {
+    in_stock?: boolean;
+    stock_quantity?: number;
+    price_gbp?: number;
+    price_eur?: number;
+    image_url?: string;
+    eligibility_status?: ProductEligibilityStatus;
+  }
+): Promise<Product | null> {
+  const sb = getSupabase();
+  if (sb) {
+    const { data, error } = await sb
+      .from('products')
+      .update({ ...changes, updated_at: new Date().toISOString() })
+      .eq('id', productId)
+      .select()
+      .single();
+    if (!error && data) return data as Product;
+    return null;
+  }
+
+  const product = fallbackDb.products.find((item) => item.id === productId);
+  if (!product) return null;
+  Object.assign(product, changes, { updated_at: new Date().toISOString() });
+  return product;
 }
