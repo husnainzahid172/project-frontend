@@ -39,6 +39,7 @@ import {
   Edit,
   Plus,
 } from 'lucide-react';
+import { PRODUCT_ELIGIBILITY_STATUSES, ProductEligibilityStatus, eligibilityLabel } from '@/lib/eligibility';
 
 interface AdminDashboardProps {
   initialOrders: OrderRecord[];
@@ -93,7 +94,6 @@ export function AdminDashboard({
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer az-admin-2026',
         },
         body: JSON.stringify({ orderId, status: newStatus }),
       });
@@ -115,10 +115,30 @@ export function AdminDashboard({
     }
   };
 
+  const updateProduct = async (
+    productId: string,
+    changes: {
+      in_stock?: boolean;
+      stock_quantity?: number;
+      price_gbp?: number;
+      price_eur?: number;
+      eligibility_status?: ProductEligibilityStatus;
+      image_url?: string;
+    }
+  ) => {
+    const response = await fetch('/api/products', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId, ...changes }),
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    setProducts((prev) => prev.map((product) => (product.id === productId ? data.product : product)));
+  };
+
   const handleToggleProductStock = (productId: string) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, in_stock: !p.in_stock } : p))
-    );
+    const product = products.find((item) => item.id === productId);
+    if (product) void updateProduct(productId, { in_stock: !product.in_stock });
   };
 
   const exportOrdersCsv = () => {
@@ -429,23 +449,48 @@ export function AdminDashboard({
                       </TableCell>
                       <TableCell className="text-xs text-zinc-400">{product.category}</TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        <span className="text-white font-semibold">£{product.price_gbp.toFixed(2)}</span>
-                        <span className="text-zinc-500 ml-1.5">/ €{product.price_eur.toFixed(2)}</span>
+                        <div className="flex items-center justify-end gap-1">
+                          <span className="text-zinc-500">£</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            defaultValue={product.price_gbp}
+                            onBlur={(event) => void updateProduct(product.id, { price_gbp: Number(event.target.value) })}
+                            className="w-20 rounded border border-zinc-800 bg-zinc-950 px-1 py-1 text-right text-white"
+                            aria-label={`GBP price for ${product.name}`}
+                          />
+                        </div>
+                        <div className="mt-1 flex items-center justify-end gap-1">
+                          <span className="text-zinc-500">€</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            defaultValue={product.price_eur}
+                            onBlur={(event) => void updateProduct(product.id, { price_eur: Number(event.target.value) })}
+                            className="w-20 rounded border border-zinc-800 bg-zinc-950 px-1 py-1 text-right text-white"
+                            aria-label={`EUR price for ${product.name}`}
+                          />
+                        </div>
                       </TableCell>
                       <TableCell className="font-mono text-xs text-zinc-300">
                         {product.coa_batch || '—'}
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            product.in_stock
-                              ? 'border-emerald-500/40 text-emerald-400 bg-emerald-950/20'
-                              : 'border-zinc-700 text-zinc-500 bg-zinc-900'
-                          }
-                        >
-                          {product.in_stock ? `In Stock (${product.stock_quantity})` : 'Out of Stock'}
-                        </Badge>
+                        <div className="space-y-1">
+                          <Badge variant="outline" className={product.in_stock ? 'border-emerald-500/40 text-emerald-400 bg-emerald-950/20' : 'border-zinc-700 text-zinc-500 bg-zinc-900'}>
+                            {product.in_stock ? `In Stock (${product.stock_quantity})` : 'Out of Stock'}
+                          </Badge>
+                          <select
+                            value={product.eligibility_status ?? 'pending_review'}
+                            onChange={(event) => void updateProduct(product.id, { eligibility_status: event.target.value as ProductEligibilityStatus })}
+                            className="block rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-[10px] text-zinc-300"
+                            aria-label={`Eligibility for ${product.name}`}
+                          >
+                            {PRODUCT_ELIGIBILITY_STATUSES.map((status) => <option key={status} value={status}>{eligibilityLabel(status)}</option>)}
+                          </select>
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

@@ -1,3 +1,5 @@
+import type { ProductEligibilityStatus } from '@/lib/eligibility';
+
 export interface Product {
   id: string;
   slug: string;
@@ -21,6 +23,7 @@ export interface Product {
   stock_quantity: number;
   max_per_order: number;
   lawful_destinations: string[]; // ISO 3166-1 alpha-2 codes (e.g. GB, DE, FR, NL, IE, ES, IT, BE, AT, CH)
+  eligibility_status?: ProductEligibilityStatus;
   description: string;
   specifications: Record<string, string>;
   safety_notes?: string | null;

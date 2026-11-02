@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Product } from '@/types/product';
 import { ProductFormat } from '@/types/order';
 import { ProductImage } from './product-image';
@@ -9,6 +10,7 @@ import { useCart } from '@/lib/cart-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Eye, Plus, Minus, Check, Package, Sparkles } from 'lucide-react';
+import { isOrderable } from '@/lib/eligibility';
 
 interface ProductCardProps {
   product: Product;
@@ -23,6 +25,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const [justAdded, setJustAdded] = useState(false);
 
   const isKit = format === 'kit';
+  const canOrder = isOrderable(product.eligibility_status);
   const unitPriceGbp = isKit && product.kit_price_gbp ? product.kit_price_gbp : product.price_gbp;
   const unitPriceEur = isKit && product.kit_price_eur ? product.kit_price_eur : product.price_eur;
 
@@ -103,13 +106,13 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/90 flex items-center gap-1">
             <span>{product.category}</span>
           </div>
-          <h3
-            className="font-bold text-zinc-100 group-hover:text-emerald-300 transition-colors line-clamp-1 cursor-pointer text-base"
-            onClick={() => onQuickView(product)}
+          <Link
+            href={`/products/${product.slug}`}
+            className="block font-bold text-zinc-100 group-hover:text-emerald-300 transition-colors line-clamp-1 text-base"
             title={product.name}
           >
             {product.name}
-          </h3>
+          </Link>
           <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
             {product.grade} • {product.unit_size}
           </p>
@@ -197,7 +200,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
 
           <Button
             onClick={handleAdd}
-            disabled={!product.in_stock}
+            disabled={!product.in_stock || !canOrder}
             className={`flex-1 h-9 text-xs font-medium transition-all duration-300 gap-1.5 ${
               justAdded
                 ? 'bg-emerald-500 text-white'
@@ -212,7 +215,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
             ) : (
               <>
                 <ShoppingCart className="h-3.5 w-3.5" />
-                {isKit ? 'Add Kit' : 'Add Vial'}
+                {!canOrder ? 'Not approved for sale' : isKit ? 'Add Kit' : 'Add Vial'}
               </>
             )}
           </Button>

@@ -1,6 +1,7 @@
 import { CustomerDetails, OrderCreateRequest, OrderCreateSuccessResponse, OrderCreateErrorResponse, ProductFormat } from '@/types/order';
 import { fetchProducts, saveOrderToDatabase } from '@/lib/supabase';
 import { ELIGIBLE_COUNTRIES } from '@/lib/products-data';
+import { isOrderable } from '@/lib/eligibility';
 
 // Configurable Business Phone Number (UK standard: +44 7448 399290)
 // Format for WhatsApp API: digits only without + sign -> 447448399290
@@ -95,6 +96,13 @@ export async function processOrderCreation(
       return {
         success: false,
         error: `Product with ID ${item.productId} was not found in the AZ Labs authorized catalogue.`,
+      };
+    }
+
+    if (!isOrderable(product.eligibility_status)) {
+      return {
+        success: false,
+        error: `Product "${product.name}" is not currently approved for sale.`,
       };
     }
 

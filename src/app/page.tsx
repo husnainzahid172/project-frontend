@@ -1,5 +1,5 @@
 import React from 'react';
-import { fetchProducts } from '@/lib/supabase';
+import { fetchPublicProducts } from '@/lib/supabase';
 import { Navbar } from '@/components/navigation/navbar';
 import { Hero } from '@/components/home/hero';
 import { ProductGrid } from '@/components/catalogue/product-grid';
@@ -14,7 +14,7 @@ import { Footer } from '@/components/navigation/footer';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const products = await fetchProducts();
+  const products = await fetchPublicProducts();
 
   return (
     <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
