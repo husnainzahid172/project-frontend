@@ -1,184 +1,128 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from '@/types/product';
-import { CartItem, ProductFormat } from '@/types/order';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { Product } from '@/types/product';
+import type { CartItem, ProductFormat } from '@/types/order';
+import { checkPurchase } from '@/lib/eligibility';
+
+export interface ResolvedCartLine extends CartItem {
+  product: Product;
+  variationName?: string;
+}
 
 interface CartContextType {
-  items: CartItem[];
-  addItem: (product: Product, quantity?: number, format?: ProductFormat) => void;
-  removeItem: (productId: string, format?: ProductFormat) => void;
-  updateQuantity: (productId: string, quantity: number, format?: ProductFormat) => void;
+  products: Product[];
+  lines: ResolvedCartLine[];
+  addItem: (productId: string, quantity?: number, format?: ProductFormat, variationId?: string) => boolean;
+  updateQuantity: (productId: string, format: ProductFormat, quantity: number, variationId?: string) => void;
+  removeItem: (productId: string, format: ProductFormat, variationId?: string) => void;
   clearCart: () => void;
   itemCount: number;
-  subtotalGbp: number;
-  subtotalEur: number;
   isCartOpen: boolean;
-  setIsCartOpen: (open: boolean) => void;
+  setIsCartOpen: (v: boolean) => void;
   isCheckoutOpen: boolean;
-  setIsCheckoutOpen: (open: boolean) => void;
+  setIsCheckoutOpen: (v: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const KEY = 'az_labs_cart_v2';
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
+export function CartProvider({ products, children }: { products: Product[]; children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage
+  const byId = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
+
+  // Load saved cart, dropping anything that no longer exists or is no longer purchasable.
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('az_labs_cart');
-      if (saved) {
-        setItems(JSON.parse(saved));
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsLoaded(true);
-    }
+      const raw = localStorage.getItem(KEY);
+      const saved: CartItem[] = raw ? JSON.parse(raw) : [];
+      setItems(
+        saved.filter(
+          (i) => i && typeof i.productId === 'string' && byId.has(i.productId) && checkPurchase(byId.get(i.productId)!).allowed
+        )
+      );
+    } catch {}
+    setLoaded(true);
+  }, [byId]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {}
+  }, [items, loaded]);
+
+  const clamp = (p: Product, q: number) => Math.max(0, Math.min(q, p.max_per_order, p.stock_quantity));
+
+  const addItem = useCallback(
+    (productId: string, quantity = 1, format: ProductFormat = 'single', variationId?: string) => {
+      const p = byId.get(productId);
+      if (!p || !checkPurchase(p).allowed) return false;
+      setItems((prev) => {
+        const idx = prev.findIndex((i) => i.productId === productId && i.format === format && (i.variationId ?? '') === (variationId ?? ''));
+        if (idx === -1) return [...prev, { productId, format, quantity: clamp(p, quantity), variationId }];
+        const next = [...prev];
+        next[idx] = { ...next[idx], quantity: clamp(p, next[idx].quantity + quantity) };
+        return next;
+      });
+      setIsCartOpen(true);
+      return true;
+    },
+    [byId]
+  );
+
+  const removeItem = useCallback((productId: string, format: ProductFormat, variationId?: string) => {
+    setItems((prev) => prev.filter((i) => !(i.productId === productId && i.format === format && (i.variationId ?? '') === (variationId ?? ''))));
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    if (!isLoaded) return;
-    try {
-      localStorage.setItem('az_labs_cart', JSON.stringify(items));
-    } catch {
-      // ignore
-    }
-  }, [items, isLoaded]);
-
-  const addItem = (product: Product, quantity = 1, format: ProductFormat = 'single') => {
-    setItems((prev) => {
-      const existingIndex = prev.findIndex(
-        (item) => item.product.id === product.id && item.format === format
+  const updateQuantity = useCallback(
+    (productId: string, format: ProductFormat, quantity: number, variationId?: string) => {
+      const p = byId.get(productId);
+      if (!p || quantity <= 0) return removeItem(productId, format, variationId);
+      setItems((prev) =>
+        prev.map((i) =>
+          i.productId === productId && i.format === format && (i.variationId ?? '') === (variationId ?? '')
+            ? { ...i, quantity: clamp(p, quantity) }
+            : i
+        )
       );
-
-      if (existingIndex > -1) {
-        const existing = prev[existingIndex];
-        const newQty = Math.min(
-          existing.quantity + quantity,
-          product.max_per_order,
-          product.stock_quantity
-        );
-        const updated = [...prev];
-        updated[existingIndex] = { ...existing, quantity: newQty };
-        return updated;
-      } else {
-        const initialQty = Math.min(quantity, product.max_per_order, product.stock_quantity);
-        return [
-          ...prev,
-          {
-            product: {
-              id: product.id,
-              slug: product.slug,
-              name: product.name,
-              sku: product.sku,
-              grade: product.grade,
-              purity: product.purity,
-              unit_size: product.unit_size,
-              price_gbp: product.price_gbp,
-              price_eur: product.price_eur,
-              kit_price_gbp: product.kit_price_gbp,
-              kit_price_eur: product.kit_price_eur,
-              in_stock: product.in_stock,
-              stock_quantity: product.stock_quantity,
-              max_per_order: product.max_per_order,
-              cap_color: product.cap_color,
-              image_url: product.image_url,
-              alt_text: product.alt_text,
-              lawful_destinations: product.lawful_destinations,
-            },
-            format,
-            quantity: initialQty,
-          },
-        ];
-      }
-    });
-    setIsCartOpen(true);
-  };
-
-  const removeItem = (productId: string, format: ProductFormat = 'single') => {
-    setItems((prev) =>
-      prev.filter((item) => !(item.product.id === productId && item.format === format))
-    );
-  };
-
-  const updateQuantity = (
-    productId: string,
-    quantity: number,
-    format: ProductFormat = 'single'
-  ) => {
-    if (quantity <= 0) {
-      removeItem(productId, format);
-      return;
-    }
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.product.id === productId && item.format === format) {
-          const clamped = Math.min(
-            quantity,
-            item.product.max_per_order,
-            item.product.stock_quantity
-          );
-          return { ...item, quantity: clamped };
-        }
-        return item;
-      })
-    );
-  };
-
-  const clearCart = () => {
-    setItems([]);
-  };
-
-  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
-
-  const subtotalGbp = items.reduce((acc, item) => {
-    const unitPrice =
-      item.format === 'kit' && item.product.kit_price_gbp
-        ? item.product.kit_price_gbp
-        : item.product.price_gbp;
-    return acc + unitPrice * item.quantity;
-  }, 0);
-
-  const subtotalEur = items.reduce((acc, item) => {
-    const unitPrice =
-      item.format === 'kit' && item.product.kit_price_eur
-        ? item.product.kit_price_eur
-        : item.product.price_eur;
-    return acc + unitPrice * item.quantity;
-  }, 0);
-
-  return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeItem,
-        updateQuantity,
-        clearCart,
-        itemCount,
-        subtotalGbp,
-        subtotalEur,
-        isCartOpen,
-        setIsCartOpen,
-        isCheckoutOpen,
-        setIsCheckoutOpen,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+    },
+    [byId, removeItem]
   );
+
+  const lines: ResolvedCartLine[] = items
+    .filter((i) => byId.has(i.productId))
+    .map((i) => {
+      const p = byId.get(i.productId)!;
+      const variation = i.variationId && p.variations ? p.variations.find((v) => v.id === i.variationId) : undefined;
+      return {
+        ...i,
+        product: p,
+        variationName: variation?.name,
+      };
+    });
+
+  const value: CartContextType = {
+    products,
+    lines,
+    addItem,
+    updateQuantity,
+    removeItem,
+    clearCart: () => setItems([]),
+    itemCount: lines.reduce((a, l) => a + l.quantity, 0),
+    isCartOpen,
+    setIsCartOpen,
+    isCheckoutOpen,
+    setIsCheckoutOpen,
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error('useCart must be used within CartProvider');
+  return ctx;
 }

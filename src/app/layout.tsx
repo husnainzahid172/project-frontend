@@ -1,57 +1,49 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/manrope';
+import '@fontsource-variable/jetbrains-mono';
 import './globals.css';
-import { CurrencyProvider } from '@/lib/currency-context';
-import { CartProvider } from '@/lib/cart-context';
 import { Toaster } from '@/components/ui/toaster';
+import { SITE } from '@/lib/site-config';
 
 export const metadata: Metadata = {
-  title: 'AZ Labs — Research. Refined. | UK & EU Peptides Supply',
-  description:
-    'High-purity lyophilized research peptides and biochemical sequences (BPC-157, TB-500, GLP3-RT, Tirzepatide, GHK-Cu, NAD+). In-vitro laboratory supply for verified UK and EU research facilities. Direct WhatsApp order dispatch.',
-  keywords: [
-    'AZ Labs',
-    'azlabs.pro',
-    'peptides UK',
-    'peptides EU',
-    'BPC-157',
-    'TB-500',
-    'GLP3-RT',
-    'Retatrutide research sequence',
-    'Tirzepatide peptide',
-    'GHK-Cu copper peptide',
-    'NAD+ coenzyme',
-    '10-vial peptide kits',
-    'HPLC certified peptides',
-    'in-vitro research peptides',
-  ],
-  authors: [{ name: 'AZ Labs (azlabs.pro)' }],
-  icons: {
-    icon: '/favicon.ico',
+  metadataBase: new URL(SITE.url),
+  title: { default: `AZ Labs | ${SITE.tagline}`, template: '%s | AZ Labs' },
+  description: 'AZ Labs: peptides and laboratory reagents in the UK and EU. Clear specifications and straightforward communication.',
+  applicationName: 'AZ Labs',
+  openGraph: {
+    type: 'website',
+    siteName: 'AZ Labs',
+    title: `AZ Labs | ${SITE.tagline}`,
+    description: 'Peptides and laboratory reagents. Clear specifications and straightforward communication.',
+    url: SITE.url,
+    images: [{ url: '/images/og.png', width: 1200, height: 630, alt: 'AZ Labs' }],
+    locale: 'en_GB',
   },
+  twitter: { card: 'summary_large_image', title: `AZ Labs | ${SITE.tagline}`, images: ['/images/og.png'] },
+  icons: { icon: '/favicon.ico', apple: '/images/apple-touch-icon.png' },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = { themeColor: '#1f2125', colorScheme: 'dark' };
+
+const orgJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE.company.legalName ?? 'AZ Labs',
+  url: SITE.url,
+  logo: `${SITE.url}/images/az-labs-mark.png`,
+  slogan: SITE.tagline,
+  email: SITE.email,
+  contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', telephone: SITE.whatsappDisplay.replace(/\s/g, ''), email: SITE.email, areaServed: ['GB', 'EU'] }],
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark h-full scroll-smooth">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="font-sans antialiased h-full bg-black text-zinc-100">
-        <CurrencyProvider>
-          <CartProvider>
-            {children}
-            <Toaster />
-          </CartProvider>
-        </CurrencyProvider>
+    <html lang="en-GB" className="dark scroll-smooth">
+      <body className="min-h-screen bg-background font-sans text-foreground">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+        {children}
+        <Toaster />
       </body>
     </html>
   );

@@ -1,55 +1,28 @@
-import React from 'react';
-import { fetchProducts } from '@/lib/supabase';
-import { Navbar } from '@/components/navigation/navbar';
+import { redirect } from 'next/navigation';
+import { fetchPublicProducts } from '@/lib/data';
+import { checkPurchase } from '@/lib/eligibility';
+import { StoreShell } from '@/components/store-shell';
 import { Hero } from '@/components/home/hero';
 import { ProductGrid } from '@/components/catalogue/product-grid';
-import { QuickOrderSection } from '@/components/home/quick-order-section';
-import { AboutStandards } from '@/components/home/about-standards';
-import { CartDrawer } from '@/components/cart/cart-drawer';
-import { CheckoutDialog } from '@/components/checkout/checkout-dialog';
-import { WhatsAppFloatingButton } from '@/components/home/whatsapp-button';
-import { ComplianceGate } from '@/components/home/compliance-gate';
-import { Footer } from '@/components/navigation/footer';
+import { QualitySection, AboutSection } from '@/components/home/about-standards';
+import { ContactSection } from '@/components/home/contact-section';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function HomePage() {
-  const products = await fetchProducts();
+  // Local testing convenience: `npm run dev` with LOCAL_PREVIEW=true opens the private preview.
+  if (process.env.NODE_ENV === 'development' && process.env.LOCAL_PREVIEW === 'true') redirect('/preview');
+
+  const products = await fetchPublicProducts();
+  const orderingOpen = products.some((p) => checkPurchase(p).allowed);
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
-      {/* 21+ In-Vitro Research Compliance Modal */}
-      <ComplianceGate />
-
-      {/* Navigation Header */}
-      <Navbar />
-
-      {/* Main Content Sections */}
-      <main className="flex-1">
-        {/* Hero Section */}
-        <Hero />
-
-        {/* Product Catalogue with Search & Filters */}
-        <ProductGrid initialProducts={products} />
-
-        {/* Direct WhatsApp Order Builder */}
-        <QuickOrderSection products={products} />
-
-        {/* Quality Assurance, HPLC Standards & FAQ */}
-        <AboutStandards />
-      </main>
-
-      {/* Slide-over Cart Drawer */}
-      <CartDrawer />
-
-      {/* Order Checkout Dialog */}
-      <CheckoutDialog />
-
-      {/* Floating WhatsApp Quick Action Button */}
-      <WhatsAppFloatingButton />
-
-      {/* Footer */}
-      <Footer />
-    </div>
+    <StoreShell products={products}>
+      <Hero orderingOpen={orderingOpen} hasProducts={products.length > 0} />
+      <ProductGrid />
+      <QualitySection />
+      <AboutSection />
+      <ContactSection />
+    </StoreShell>
   );
 }

@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -37,9 +35,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.genkit/*
+# env files (keep the example)
 .env*
+!.env.example
 
-# firebase
+.genkit/*
 firebase-debug.log
 firestore-debug.log

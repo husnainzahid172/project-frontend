@@ -6,54 +6,32 @@ export type OrderStatus =
   | 'completed'
   | 'cancelled';
 
-export type ProductFormat = 'single' | 'kit';
+export const ORDER_STATUSES: OrderStatus[] = [
+  'pending_contact',
+  'confirmed',
+  'processing',
+  'dispatched',
+  'completed',
+  'cancelled',
+];
 
-export interface CustomerDetails {
-  name: string;
-  email: string;
-  phone: string;
-  institution?: string;
-  addressLine1: string;
-  addressLine2?: string;
-  city: string;
-  postalCode: string;
-  countryCode: string; // e.g. 'GB', 'DE', 'FR', 'NL', 'IE'
-  notes?: string;
-  complianceConfirmed: boolean;
-}
+export type ProductFormat = 'single' | 'kit';
+export type Currency = 'GBP' | 'EUR';
 
 export interface CartItem {
-  product: {
-    id: string;
-    slug: string;
-    name: string;
-    sku: string;
-    grade: string;
-    purity?: string | null;
-    unit_size: string;
-    price_gbp: number;
-    price_eur: number;
-    kit_price_gbp?: number;
-    kit_price_eur?: number;
-    in_stock: boolean;
-    stock_quantity: number;
-    max_per_order: number;
-    cap_color?: string;
-    image_url: string;
-    alt_text: string;
-    lawful_destinations: string[];
-  };
-  format: ProductFormat; // 'single' = Single Vial, 'kit' = 10-Vial Box
+  productId: string;
+  format: ProductFormat;
   quantity: number;
+  variationId?: string;
 }
 
 export interface OrderItemRecord {
   id: string;
   order_id: string;
-  product_id: string;
+  product_id: string | null;
   product_name: string;
   sku: string;
-  format?: ProductFormat;
+  format?: ProductFormat | null;
   unit_price: number;
   quantity: number;
   total_price: number;
@@ -72,58 +50,57 @@ export interface OrderRecord {
   city: string;
   postal_code: string;
   country_code: string;
-  currency: 'GBP' | 'EUR';
+  currency: Currency;
   subtotal: number;
   shipping_cost: number;
   vat_amount: number;
   total_amount: number;
   status: OrderStatus;
-  compliance_confirmed: boolean;
+  terms_accepted?: boolean | null;
   notes?: string | null;
-  whatsapp_opened_at?: string | null;
   created_at: string;
   updated_at: string;
   items?: OrderItemRecord[];
 }
 
-export interface OrderCreateRequest {
-  customer: CustomerDetails;
-  items: {
-    productId: string;
-    format?: ProductFormat;
-    quantity: number;
-  }[];
-  currency: 'GBP' | 'EUR';
+export interface AuditLogEntry {
+  id: string;
+  actor_email: string | null;
+  entity: 'product' | 'order';
+  entity_id: string;
+  action: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+  created_at: string;
 }
 
-export interface OrderCreateSuccessResponse {
-  success: true;
-  order: {
-    id: string;
-    reference: string;
-    customer_name: string;
-    currency: 'GBP' | 'EUR';
-    subtotal: number;
-    shipping_cost: number;
-    vat_amount: number;
-    total_amount: number;
-    status: OrderStatus;
-    created_at: string;
-    items: {
-      name: string;
-      sku: string;
-      format?: ProductFormat;
-      quantity: number;
-      unitPrice: number;
-      totalPrice: number;
-    }[];
-  };
-  whatsappUrl: string;
-  message: string;
+export interface QuoteLine {
+  productId: string;
+  name: string;
+  sku: string;
+  format: ProductFormat;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+  variationId?: string;
 }
 
-export interface OrderCreateErrorResponse {
-  success: false;
-  error: string;
-  details?: Record<string, string[]>;
+export interface Quote {
+  currency: Currency;
+  lines: QuoteLine[];
+  subtotal: number;
+  shipping: number;
+  vatRate: number;
+  vat: number;
+  total: number;
 }
+
+export type OrderCreateResponse =
+  | {
+      success: true;
+      reference: string;
+      quote: Quote;
+      whatsappUrl: string;
+      duplicate?: boolean;
+    }
+  | { success: false; error: string; fieldErrors?: Record<string, string[]> };
